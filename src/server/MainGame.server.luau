@@ -1,4 +1,4 @@
-local entitydata = require(game.ReplicatedStorage.EntityData)
+local entityData = require(game.ReplicatedStorage.EntityData)
 
 local wave = Instance.new("IntValue")
 wave.Name = "Wave"
@@ -6,22 +6,25 @@ wave.Parent = game.ReplicatedStorage
 local remotes = Instance.new("Folder")
 remotes.Name = "Remotes"
 remotes.Parent = game.ReplicatedStorage
-for _, remoteName in ipairs({"Death", "Cash", "Music"}) do
+for _, remoteName in ipairs({"Death", "Cash", "Music", "Tower"}) do
 	local remote = Instance.new("RemoteEvent")
 	remote.Name = remoteName
 	remote.Parent = remotes
 end
+local levelRemote = Instance.new("RemoteFunction")
+levelRemote.Name = "Level"
+levelRemote.Parent = remotes
 
-game.Players.PlayerAdded:Connect(function(p)
-    p.CharacterAdded:Connect(function(c)
+game.Players.PlayerAdded:Connect(function(plr)
+    plr.CharacterAdded:Connect(function(chr)
         local cash = Instance.new("IntValue")
         cash.Name = "Cash"
         cash.Value = 200
-        cash.Parent = c
+        cash.Parent = chr
         local arcana = Instance.new("IntValue")
         arcana.Name = "Arcana"
         arcana.Value = 0
-        arcana.Parent = c
+        arcana.Parent = chr
     end)
 end)
 
@@ -34,18 +37,18 @@ local rotationSpeed = .2
 function SpawnEnemy(path,entityname)
 	local entity = game.Workspace.Dummy:Clone()
 	entity.Name = entityname
-	entity.EnemyHealth.Value = entitydata.Data[entity.Name]["Health"]
-	entity.Torso.Color = entitydata.Data[entity.Name]["Color"]
+	entity.EnemyHealth.Value = entityData.Data[entity.Name]["Health"]
+	entity.Torso.Color = entityData.Data[entity.Name]["Color"]
 	entity.TextGui.TextLabel.Text = entityname
-	local pathvalue = Instance.new("ObjectValue",entity)
-	pathvalue.Value = path
-	pathvalue.Name = "Path"
+	local pathValue = Instance.new("ObjectValue",entity)
+	pathValue.Value = path
+	pathValue.Name = "Path"
 	entity:PivotTo(path.CFrame * CFrame.new(0,2,0))
 	entity.Parent = workspace.Enemies
-	entity.HealthGui.Background.TextLabel.Text = "HP:" .. entitydata.Data[entity.Name]["Health"]
+	entity.HealthGui.Background.TextLabel.Text = "HP:" .. entityData.Data[entity.Name]["Health"]
 	wait(0.1)
 	local track = Instance.new("Animation")
-	track.AnimationId = entitydata.Data[entity.Name]["Animation"]
+	track.AnimationId = entityData.Data[entity.Name]["Animation"]
 	local anim = entity.Humanoid.Animator:LoadAnimation(track)
 	anim:Play()
 end
@@ -53,8 +56,8 @@ end
 function MoveEnemy(entity)
 	local reachedend = false
 	local node = entity.Path.Value
-	local entityspeed = entitydata.Data[entity.Name]["Speed"]
-	local dmg = entitydata.Data[entity.Name]["Health"]
+	local entityspeed = entityData.Data[entity.Name]["Speed"]
+	local dmg = entityData.Data[entity.Name]["Health"]
 
 	while reachedend == false do
 		local nextnodes = node:GetChildren()
@@ -70,20 +73,23 @@ function MoveEnemy(entity)
 				entityPrimary = entity.PrimaryPart
 			end
 
-			local rotationtween = TweenService:Create(entityPrimary, TweenInfo.new(rotationSpeed,Enum.EasingStyle.Linear), {CFrame = cframedata})
-			local movementtween = TweenService:Create(entityPrimary, TweenInfo.new(distance*speed*entityspeed, Enum.EasingStyle.Linear), {CFrame = node.CFrame})
+			local rotationTween
+			local movementTween
+            if entityPrimary then
+                rotationTween = TweenService:Create(entityPrimary, TweenInfo.new(rotationSpeed,Enum.EasingStyle.Linear), {CFrame = cframedata})
+			    movementTween = TweenService:Create(entityPrimary, TweenInfo.new(distance*speed*entityspeed, Enum.EasingStyle.Linear), {CFrame = node.CFrame})
 
-			rotationtween:Play()
-			rotationtween.Completed:Wait()
-
-			movementtween:Play()
-			movementtween.Completed:Wait()
+			    rotationTween:Play()
+			    rotationTween.Completed:Wait()
+			    movementTween:Play()
+			    movementTween.Completed:Wait()
+            end
 
 			if entity:FindFirstChild("EnemyHealth") then
 				entity.EnemyHealth.Changed:Connect(function()
 					if entity.EnemyHealth.Value == 0 then
-						rotationtween:Stop()
-						movementtween:Stop()
+						rotationTween:Stop()
+						movementTween:Stop()
 					end
 				end)
 			end
@@ -96,7 +102,6 @@ function MoveEnemy(entity)
 		elseif (#nextnodes == 0) then
 			reachedend = true
 			entity:Destroy()
-			print("BaseDmg:"..dmg)
 			workspace.PlrBase.Health.Value -= dmg
 		end
 	end
@@ -107,12 +112,12 @@ game.Workspace.Enemies.ChildAdded:Connect(function(entity)
 end)
 
 wait(5)
-print("start")
+print("The gamemode has started.")
 
-local wavedata = require(game.ReplicatedStorage.WaveData)
+local waveData = require(game.ReplicatedStorage.WaveData)
 local map = "Baseplate"
-local defaultwait = wavedata.GeneralData.TimeUntilSpawn
-local waves = #wavedata.WaveData[map]
+local defaultWait = waveData.GeneralData.TimeUntilSpawn
+local waves = #waveData.WaveData[map]
 
 local folder = workspace.Enemies
 local count = 0
@@ -135,45 +140,47 @@ for wave=1, waves do
 	if workspace.PlrBase.Health.Value == 0 then return end
 	game.ReplicatedStorage.Wave.Value = wave
 
-	remotes.Cash:FireAllClients(wavedata.MoneyData[map][wave])
+		local moneyGain = waveData.MoneyData[map][wave][1]
+		for _, plr in game.Players:GetPlayers() do
+			local chr = plr.Character
+			if chr then
+				local cash = chr:WaitForChild("Cash")
+				if cash then
+					cash.Value += moneyGain
+				end
+			end
+		end
 
 	local function music()
 		if wave == 5 then
-			remotes.Music:FireAllClients(wavedata.GeneralData.FirstMusic)
+			remotes.Music:FireAllClients(waveData.GeneralData.FirstMusic)
 		elseif wave == 10 then
-			remotes.Music:FireAllClients(wavedata.GeneralData.FourthMusic)
+			remotes.Music:FireAllClients(waveData.GeneralData.FourthMusic)
 		elseif wave == 15 then
-			remotes.Music:FireAllClients(wavedata.GeneralData.SeventhMusic)
+			remotes.Music:FireAllClients(waveData.GeneralData.SeventhMusic)
 		elseif wave == 25 then
-			remotes.Music:FireAllClients(wavedata.GeneralData.FifthMusic)
+			remotes.Music:FireAllClients(waveData.GeneralData.FifthMusic)
 		elseif wave == 35 then
-			remotes.Music:FireAllClients(wavedata.GeneralData.ThirdMusic)
+			remotes.Music:FireAllClients(waveData.GeneralData.ThirdMusic)
 		elseif wave == 40 then
-			remotes.Music:FireAllClients(wavedata.GeneralData.SecondMusic)
+			remotes.Music:FireAllClients(waveData.GeneralData.SecondMusic)
 		end
 	end
 	music()
 
-	for i=1, #wavedata.WaveData[map][wave] do
+	for i=1, #waveData.WaveData[map][wave] do
 		if workspace.PlrBase.Health.Value == 0 then return end
-		if (type(wavedata.WaveData[map][wave][i]) == "table") then
-			local entityname = wavedata.WaveData[map][wave][1]
+		if (type(waveData.WaveData[map][wave][i]) == "table") then
+			local entityName = waveData.WaveData[map][wave][1]
 			local path = paths[1]
-			wait(wavedata.WaveData[map][wave][2])
-			SpawnEnemy(path,entityname)
+			wait(waveData.WaveData[map][wave][2])
+			SpawnEnemy(path,entityName)
 		else
-			local entityname = wavedata.WaveData[map][wave][i]
+			local entityName = waveData.WaveData[map][wave][i]
 			local path = paths[1]
-			SpawnEnemy(path,entityname)
-			wait(defaultwait)
+			SpawnEnemy(path,entityName)
+			wait(defaultWait)
 		end
 	end
 	repeat wait() until count == 0
 end
-
-
---while true do
-	--local path = paths[math.random(1,#paths)]
-	--SpawnEnemy(path)
-	--wait(2)
---end

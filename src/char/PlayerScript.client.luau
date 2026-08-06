@@ -1,21 +1,19 @@
-local p = game.Players.LocalPlayer
+local plr = game.Players.LocalPlayer
 
 local musicOn = false
 local sound = Instance.new("Sound")
-sound.Parent = p
+sound.Parent = plr
 sound.Looped = true
 
-local remotes = game.ReplicatedStorage.Remotes
+local remotes = game.ReplicatedStorage:WaitForChild("Remotes")
+local deathRemote = remotes:WaitForChild("Death")
+local musicRemote = remotes:WaitForChild("Music")
 
-remotes.Death.OnClientEvent:Connect(function()
-	p.PlayerGui.EndGui.Enabled = true
+deathRemote.OnClientEvent:Connect(function()
+	plr.PlayerGui.EndGui.Enabled = true
 end)
 
-remotes.Cash.OnClientEvent:Connect(function(value)
-	p.Character.Cash.Value += unpack(value)
-end)
-
-remotes.Music.OnClientEvent:Connect(function(music)
+musicRemote.OnClientEvent:Connect(function(music)
 	if musicOn == false then
 		sound.SoundId = music
 		sound.Volume = 1.5
