@@ -1,41 +1,7 @@
 local module = {}
 
-module.ScytherUpgradeData = {
-	["Scyther0"] = {
-		["Damage"] = 20,
-		["Range"] = 10,
-		["AttackSpeed"] = 2,
-		["AnimationSpeed"] = 1,
-		["Price"] = 550,
-		["HiddenDetection"] = false,
-	},
-	["Scyther1"] = {
-		["Damage"] = 30,
-		["Range"] = 12,
-		["AttackSpeed"] = 2,
-		["AnimationSpeed"] = 1,
-		["Price"] = 700,
-		["HiddenDetection"] = false,
-	},
-	["Scyther2"] = {
-		["Damage"] = 35,
-		["Range"] = 15,
-		["AttackSpeed"] = 1.5,
-		["AnimationSpeed"] = 1.5,
-		["Price"] = 1250,
-		["HiddenDetection"] = false,
-	},
-	["Scyther3"] = {
-		["Damage"] = 45,
-		["Range"] = 15,
-		["AttackSpeed"] = 1,
-		["AnimationSpeed"] = 2,
-		["Price"] = "Max",
-		["HiddenDetection"] = false,
-	},
-}
-
-module.NeutralUpgradeData = {
+module.NeutralUpgradeData = { --Sets the upgrade data for the tower "Neutral" by upgrade level.
+    --Data includes expected damage, range, attack speed, animation speed, price, ui description and hidden enemy detection.
 	["Neutral0"] = {
 		["Damage"] = 5,
 		["Range"] = 15,

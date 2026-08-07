@@ -1,6 +1,7 @@
 local module = {}
 
-module.Data = {
+module.Data = { --Sets the data for every enemy by name.
+    --Data includes expected speed, health, stealth state, color and animation.
 	["Slow Dummy"] = {
 		["Speed"] = 4,
 		["Health"] = 15,

@@ -1,7 +1,8 @@
 local module = {}
 
-module.GeneralData = {
-	["TimeUntilSpawn"] = 1.5,
+module.GeneralData = { --Sets data used independently from maap.
+	["TimeUntilSpawn"] = 1.5, --Sets time waited for enemy spawning.
+	--Sets music for use on main game.
 	["FirstMusic"] = "rbxassetid://1837667732", -- Tension
 	["SecondMusic"] = "rbxassetid://7001023404", -- Epic
 	["ThirdMusic"] = "rbxassetid://1847858557", -- End Game
@@ -11,8 +12,8 @@ module.GeneralData = {
 	["SeventhMusic"] = "rbxassetid://1326552262", -- Mistakes
 }
 
-module.WaveData = {
-	["Baseplate"] = {
+module.WaveData = { --Sets data for the enemy waves.
+	["Baseplate"] = { --Sets enemy data in order for every wave and for this specific map.
 		{"Slow Dummy","Slow Dummy","Slow Dummy"},
 		{"Slow Dummy","Slow Dummy","Slow Dummy","Slow Dummy","Slow Dummy","Slow Dummy"},
 		{"Slow Dummy","Slow Dummy","Slow Dummy","Fast Dummy","Fast Dummy","Fast Dummy"},
@@ -56,8 +57,8 @@ module.WaveData = {
 	}
 }
 
-module.MoneyData = {
-	["Baseplate"] = {
+module.CashData = { --Sets data for cash values.
+	["Baseplate"] = { --Sets the cash gain value for every wave start on this map.
 		{0},
 		{220},
 		{250},
